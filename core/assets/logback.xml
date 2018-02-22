@@ -1,0 +1,25 @@
+<configuration>
+    <timestamp key="bySecond" datePattern="yyyy-MM-dd-HH-mm"/>
+    <conversionRule conversionWord="chighlight" converterClass="sk.accerek.hamlet.logging.CustomLogHighlighter" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%gray(%d{HH:mm:ss}) %white([%thread]) %chighlight({%level}) %white(%logger{36}) %boldWhite(>>) %chighlight(%msg%n)</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/log-${bySecond}.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder>
+            <pattern>%d{HH:mm:ss} [%thread] {%level} %logger{36} >> %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

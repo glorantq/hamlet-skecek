@@ -1,0 +1,98 @@
+apply plugin: "java"
+
+sourceCompatibility = 1.8
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+project.ext.mainClassName = "sk.accerek.hamlet.desktop.DesktopLauncher"
+project.ext.assetsDir = new File("../core/assets");
+
+jar.baseName = "sk.accers.Hamlet"
+
+def versionPropsFile = file("../buildv.properties")
+def versionBuild
+
+if (versionPropsFile.canRead()) {
+    def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    versionBuild = versionProps['VERSION_BUILD'].toInteger()
+} else {
+    throw new FileNotFoundException("Could not read buildv.properties!")
+}
+
+ext.autoIncrementBuildNumber = {
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+        versionProps['VERSION_BUILD'] = versionBuild.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+    } else {
+        throw new FileNotFoundException("Could not read buildv.properties!")
+    }
+}
+
+task createProperties(dependsOn: processResources) {
+    doLast {
+        new File("$sourceSets.main.output.resourcesDir/version.properties").withWriter { w ->
+            Properties p = new Properties()
+            p['version'] = versionBuild.toString()
+            p.store w, null
+        }
+    }
+}
+
+task run(dependsOn: classes, type: JavaExec) {
+    main = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.assetsDir
+    ignoreExitValue = true
+}
+
+classes {
+    dependsOn autoIncrementBuildNumber
+    dependsOn createProperties
+}
+
+task debug(dependsOn: classes, type: JavaExec) {
+    main = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.assetsDir
+    ignoreExitValue = true
+    debug = true
+}
+
+task dist(type: Jar) {
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.output.resourcesDir)
+    from {configurations.compile.collect {zipTree(it)}}
+    from files(project.assetsDir);
+
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+    }
+
+    archiveName jar.baseName + "-build" + versionBuild + ".jar"
+}
+
+
+dist.dependsOn classes
+
+eclipse {
+    project {
+        name = appName + "-desktop"
+        linkedResource name: 'assets', type: '2', location: 'PARENT-1-PROJECT_LOC/core/assets'
+    }
+}
+
+task afterEclipseImport(description: "Post processing after project generation", group: "IDE") {
+  doLast {
+    def classpath = new XmlParser().parse(file(".classpath"))
+    new Node(classpath, "classpathentry", [ kind: 'src', path: 'assets' ]);
+    def writer = new FileWriter(file(".classpath"))
+    def printer = new XmlNodePrinter(new PrintWriter(writer))
+    printer.setPreserveWhitespace(true)
+    printer.print(classpath)
+  }
+}

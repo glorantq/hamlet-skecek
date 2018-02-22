@@ -1,0 +1,86 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        jcenter()
+    }
+
+    dependencies {
+
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+
+    version = '1.0'
+    ext {
+        appName = "hamlet"
+        gdxVersion = '1.9.8'
+        roboVMVersion = '2.3.1'
+        box2DLightsVersion = '2.0-SNAPSHOT'
+        ashleyVersion = '1.7.0'
+        aiVersion = '1.8.0'
+
+        lombokVersion = "1.16.18"
+        guavaVersion = "23.5-jre"
+        reflectionsVersion = "0.9.10"
+        logbackVersion = "1.2.3"
+        jansiVersion = "1.16"
+        janinoVersion = "3.0.8"
+        daggerVersion = "1.2.5"
+        commonsCliVersion = "1.4"
+        discordVersion = "master-SNAPSHOT"
+        flowNbtVersion = "1.0.1-SNAPSHOT"
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+project(":desktop") {
+    apply plugin: "java"
+
+    dependencies {
+        compile project(":core")
+        compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+    }
+}
+
+project(":core") {
+    apply plugin: "java"
+
+    dependencies {
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        compile "com.badlogicgames.box2dlights:box2dlights:$box2DLightsVersion"
+        compile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
+        compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.4"
+
+        compile "org.projectlombok:lombok:$lombokVersion"
+        compile "com.google.guava:guava:$guavaVersion"
+        compile "org.reflections:reflections:$reflectionsVersion"
+        compile "ch.qos.logback:logback-core:$logbackVersion"
+        compile "ch.qos.logback:logback-classic:$logbackVersion"
+        compile "org.fusesource.jansi:jansi:$jansiVersion"
+        compile "com.squareup.dagger:dagger:$daggerVersion"
+        compile "commons-cli:commons-cli:$commonsCliVersion"
+        compile "com.github.MinnDevelopment:java-discord-rpc:$discordVersion"
+        compile "com.flowpowered:flow-nbt:$flowNbtVersion"
+    }
+}
+
+tasks.eclipse.doLast {
+    delete ".project"
+}
